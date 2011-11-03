@@ -4,14 +4,16 @@ import org.quibot._
 import java.io.File
 
 trait GitCommands extends QuiBot with CLICommands {
-    val timer = new java.util.Timer()
     currDir = Some(new File(options.getOrElse("gitRepo", ".")))
+    
+    val timer = new java.util.Timer()
     timer schedule ( new java.util.TimerTask {
         override def run() = fetchGit
     }, 10000, 300000) // 5 min
     
     respondTo("git +log *(.*)$") { msg =>
-        val branch = if (msg.groups.size > 0) msg.groups(0) else "origin/master"
+        val branch = if (msg.groups.size > 0 && msg.groups(0) != "") msg.groups(0) else "origin/master"
+        println(msg.groups+ " :: "+msg.groups.size + " :: "+branch)
         println("git log --oneline -n 5 "+branch)
         val (_, content) = exec("git log --oneline -n 5 "+branch)
         say(msg.channel, "[branch "+branch+"]")
@@ -21,7 +23,7 @@ trait GitCommands extends QuiBot with CLICommands {
     def getCommitMessages(lowerCommit: String, upperCommit: String, branch: String, commitLimit: Int = 10) = {
         val (_, lines) = exec("git log "+lowerCommit+"..."+upperCommit+" --oneline")
         if (lines.size > commitLimit) 
-            (lines.take(commitLimit)) ::: List("...")
+            (lines.take(commitLimit)) ::: List("... (more commits)")
         else
             lines
     }
@@ -38,41 +40,35 @@ trait GitCommands extends QuiBot with CLICommands {
  * [new tag]         0.11       -> 0.11
  aeoijeaiojaeoijaejae
  aeiopjeioajaeiojioaejoaeij""" split "\n"
-        var message = ""
-        try {
+        val regex = """(([a-z0-9]+)\.\.([a-z0-9]+))? +([^ ]+) +-> ([^ ]+).*$""".r
+        var messages = List[String]()
         if (lines.size != 0) {
-            message += "-----------!! Repository updates !!-----------\n"
+            messages ::= "-----------!! Repository updates !!-----------"
             lines.foreach { line => 
-                val regex = """(([a-z0-9]+)\.\.([a-z0-9]+))? +([^ ]+) +-> ([^ ]+).*$""".r
                 val matchIterator = regex findAllIn line
                 val subgroups = matchIterator.matchData.flatMap( m => m.subgroups).toList
                 if (subgroups.size > 0) {
                     line(1) match {
                         case ' ' => {
-                            message += ":::: [new commits] "+subgroups(4) + "\n"
+                            messages ::= ":::: [new commits] " + subgroups(4)
                             val commits = getCommitMessages(subgroups(1), subgroups(2), subgroups(4))
-                            message += commits map (commit => "         "+truncateCommitMsg(commit)) mkString ("\n")
-                            message += "\n"
+                            messages :::= commits map (commit => "         "+truncateCommitMsg(commit))
                         }
                         case '*' => {
                             if (line contains "[new tag]")
-                                message += "**** [new tag] "+subgroups(4) + "\n"    
+                                messages ::= "**** [new tag] "+subgroups(4)
                             else
-                                message += "**** [new branch] "+subgroups(4) + "\n"
+                                messages ::= "**** [new branch] "+subgroups(4)
                         }
-                        case '+' => message += "++++ [forced update] "+subgroups(4) + "\n"
-                        case _ => message += line
+                        case '+' => messages ::= "++++ [forced update] "+subgroups(4)
+                        case _ => messages ::= line
                     }
                 }
             }
-            val messages = message split "\n"
+            messages = messages.reverse
             joinChannels foreach { channel => 
                 say(channel, messages:_*)
             }
-        }
-    }
-        catch {
-            case e: Exception => e.printStackTrace
         }
     }
 }
