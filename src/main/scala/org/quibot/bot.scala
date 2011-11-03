@@ -21,14 +21,10 @@ case class MatchedMessage(msg: Message, regex: Regex) {
     def user = msg.user
 }
 
-case class QuiBot(nick:Nick, host:String, port:Int, options: collection.mutable.Map[String, String], joinChannels: Channel*) extends IrcBot {
+case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) extends IrcBot {
 
-    joinChannels foreach { channel => this ! Join(channel) }
+    joinedChannels foreach { channel => this ! Join(channel) }
     val commands = new collection.mutable.ArrayBuffer[Command]
-
-    respondTo("ping *$") { msg =>
-        sayTo(msg.channel, msg.user.nick.nickname, "PONG!")
-    }
 
     def removeNickFromMessage(msg: Message, nick: Nick) = {
         msg.copy( message = msg.message.substring(nick.nickname.length+1).trim )
@@ -38,7 +34,7 @@ case class QuiBot(nick:Nick, host:String, port:Int, options: collection.mutable.
         ircMessage match {
             case d @ Disconnected()                     => exit()
             case p @ Participant(channel, participants) => {
-                if (joinChannels contains channel) {
+                if (joinedChannels contains channel) {
                    println("Joined channel " + channel + "; participants are: " + (participants mkString " "))   
                 }
             }
@@ -56,10 +52,6 @@ case class QuiBot(nick:Nick, host:String, port:Int, options: collection.mutable.
             case km @ KickMsg(user, channel, nick, message)     =>()
     }
 
-    def respondTo(regexStr: String)(f: MatchedMessage => Unit) {
-        val regex = ("(?i)"+regexStr).r //adding case insensitive
-        commands += Command(regex)(f)  
-    }
     def say(channel: Channel, msgs: String*) {
         this ! Say(channel, msgs toList)
     }
@@ -67,6 +59,12 @@ case class QuiBot(nick:Nick, host:String, port:Int, options: collection.mutable.
         this ! Say(channel, msgs map ( msg => userNick + ": " + msg ) toList)
     }
 
+    def use (plugins: QuiBotPlugin*) {
+        for( plugin <- plugins) {
+            this.commands appendAll plugin.commands 
+            plugin setBot this
+        }
+    }
 }
 
 object Bot {
@@ -77,10 +75,9 @@ object Bot {
         val ircServer = properties.getProperty("ircServer")
         val port = properties.getProperty("port").toInt
         val channels = properties.getProperty("channels") split "," map ( Channel(_) )
-        val options = collection.mutable.Map( "gitRepo" -> properties.getProperty("gitRepositoryDir"))
-        val bot1 = new QuiBot(nick, ircServer, port, options, channels :_*) 
-                        with SwearingCommands with GitCommands
-        bot1.start
+        val bot = new QuiBot(nick, ircServer, port, channels :_*) 
+        bot use (GitPlugin(properties.getProperty("gitRepositoryDir")), SwearingPlugin() )
+        bot.start
 
         println("Starting Bot!")
    }

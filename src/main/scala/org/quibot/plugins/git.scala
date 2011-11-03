@@ -3,8 +3,8 @@ package org.quibot.plugins
 import org.quibot._
 import java.io.File
 
-trait GitCommands extends QuiBot with CLICommands {
-    currDir = Some(new File(options.getOrElse("gitRepo", ".")))
+case class GitPlugin(gitRepositoryDir: String) extends QuiBotPlugin with CLICommands {
+    currDir = Some(new File(gitRepositoryDir))
 
     val timer = new java.util.Timer()
     timer schedule ( new java.util.TimerTask {
@@ -13,8 +13,6 @@ trait GitCommands extends QuiBot with CLICommands {
     
     respondTo("git +log *(.*)$") { msg =>
         val branch = if (msg.groups.size > 0 && msg.groups(0) != "") msg.groups(0) else "origin/master"
-        println(msg.groups+ " :: "+msg.groups.size + " :: "+branch)
-        println("git log --oneline -n 5 "+branch)
         val (_, content) = exec("git log --oneline -n 5 "+branch)
         say(msg.channel, "[branch "+branch+"]")
         say(msg.channel, content map ( commit => "    " + commit ) toArray :_*)
@@ -66,9 +64,7 @@ trait GitCommands extends QuiBot with CLICommands {
                 }
             }
             messages ::= "-----------!! Repository updates !!-----------"
-            for (channel <- joinChannels) {
-                say(channel, messages:_*)
-            }
+            sayAllChannels(messages:_*)
         }
     }
 }

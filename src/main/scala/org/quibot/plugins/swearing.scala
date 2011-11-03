@@ -2,7 +2,7 @@ package org.quibot.plugins
 
 import org.quibot._
 
-trait SwearingCommands extends QuiBot {
+case class SwearingPlugin extends QuiBotPlugin {
     respondTo("que time é teu\\? *$") { msg =>
         sayTo(msg.channel, msg.user.nick.nickname, "bateu na trave e entrou no teu")
     }    
