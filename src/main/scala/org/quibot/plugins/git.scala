@@ -5,7 +5,7 @@ import java.io.File
 
 trait GitCommands extends QuiBot with CLICommands {
     currDir = Some(new File(options.getOrElse("gitRepo", ".")))
-    
+
     val timer = new java.util.Timer()
     timer schedule ( new java.util.TimerTask {
         override def run() = fetchGit
@@ -30,6 +30,7 @@ trait GitCommands extends QuiBot with CLICommands {
     def truncateCommitMsg(msg: String, limit: Int = 100) = if (msg.length > limit) msg.take(100) + "..."  else msg
 
     def fetchGit = {
+        // val lines = exec("git fetch")
         val lines = """ap okepokaopka
         aepokaopkaeok
         aekoaeopkae
@@ -43,16 +44,15 @@ trait GitCommands extends QuiBot with CLICommands {
         val regex = """(([a-z0-9]+)\.\.([a-z0-9]+))? +([^ ]+) +-> ([^ ]+).*$""".r
         var messages = List[String]()
         if (lines.size != 0) {
-            messages ::= "-----------!! Repository updates !!-----------"
-            lines.foreach { line => 
+            for (line <- lines) {
                 val matchIterator = regex findAllIn line
                 val subgroups = matchIterator.matchData.flatMap( m => m.subgroups).toList
                 if (subgroups.size > 0) {
                     line(1) match {
                         case ' ' => {
-                            messages ::= ":::: [new commits] " + subgroups(4)
                             val commits = getCommitMessages(subgroups(1), subgroups(2), subgroups(4))
                             messages :::= commits map (commit => "         "+truncateCommitMsg(commit))
+                            messages ::= ":::: [new commits] " + subgroups(4)
                         }
                         case '*' => {
                             if (line contains "[new tag]")
@@ -65,8 +65,8 @@ trait GitCommands extends QuiBot with CLICommands {
                     }
                 }
             }
-            messages = messages.reverse
-            joinChannels foreach { channel => 
+            messages ::= "-----------!! Repository updates !!-----------"
+            for (channel <- joinChannels) {
                 say(channel, messages:_*)
             }
         }

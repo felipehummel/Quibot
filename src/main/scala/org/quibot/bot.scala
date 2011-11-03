@@ -71,8 +71,14 @@ case class QuiBot(nick:Nick, host:String, port:Int, options: collection.mutable.
 
 object Bot {
    def main(args: Array[String]): Unit = {
-        val options = collection.mutable.Map( "gitRepo" -> "/home/felipe/workspace/quati/quati")
-        val bot1 = new QuiBot("gerenteDoBanco", "10.60.1.22", 6667, options, "#teste2") 
+        val properties = new java.util.Properties();
+        properties.load(new java.io.FileInputStream("quibot.cfg"))
+        val nick = properties.getProperty("nick")
+        val ircServer = properties.getProperty("ircServer")
+        val port = properties.getProperty("port").toInt
+        val channels = properties.getProperty("channels") split "," map ( Channel(_) )
+        val options = collection.mutable.Map( "gitRepo" -> properties.getProperty("gitRepositoryDir"))
+        val bot1 = new QuiBot(nick, ircServer, port, options, channels :_*) 
                         with SwearingCommands with GitCommands
         bot1.start
 
