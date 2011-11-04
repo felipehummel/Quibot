@@ -9,7 +9,7 @@ case class GitPlugin(gitRepositoryDir: String) extends QuiBotPlugin with CLIComm
     val timer = new java.util.Timer()
     timer schedule ( new java.util.TimerTask {
         override def run() = fetchGit
-    }, 10000, 300000) // 5 min
+    }, 60000, 300000) // 5 min
     
     respondTo("git +log *(.*)$") { msg =>
         println("[INFO] 'git log' "+msg) 
@@ -30,17 +30,7 @@ case class GitPlugin(gitRepositoryDir: String) extends QuiBotPlugin with CLIComm
 
     def fetchGit = {
         val lines = exec("git fetch")._2
- //        val lines = """ap okepokaopka
- //        aepokaopkaeok
- //        aekoaeopkae
- // + b8ef533...4326864 wip-anselmo -> origin/wip-anselmo  (forced update)
- //   97a0c882909e..05db5143730bf  wip-lg     -> origin/wip-lg
- // * [new branch]      wip-lg-credipre -> origin/wip-lg-credipre
- // + 89f2ab1...02875b5 wip-rodrigo_data -> origin/wip-rodrigo_data  (forced update)
- // * [new tag]         0.11       -> 0.11
- // aeoijeaiojaeoijaejae
- // aeiopjeioajaeiojioaejoaeij""" split "\n"
-        println("[INFO] 'git fetch' response: "+lines)
+        println("[INFO] "+new java.util.Date + " 'git fetch' "+lines.size + " lines of result")
         val regex = """(([a-z0-9]+)\.\.([a-z0-9]+))? +([^ ]+) +-> ([^ ]+).*$""".r
         var messages = List[String]()
         if (lines.size != 0) {
