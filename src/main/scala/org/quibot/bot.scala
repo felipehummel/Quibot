@@ -75,6 +75,7 @@ object Bot {
         val bot = new QuiBot(nick, ircServer, port, channels :_*)
         bot use ( GitPlugin(properties.getProperty("gitRepositoryDir")),
                   SwearingPlugin(),
+                  WallPlugin(),
                   BasicPlugin() )
         bot.start
         println("Starting Bot!")
