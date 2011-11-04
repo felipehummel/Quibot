@@ -19,4 +19,7 @@ trait QuiBotPlugin {
     def sayAllChannels(msgs: String*) = bot map { quibot => 
 	    quibot.joinedChannels.foreach { c => quibot say(c, msgs:_*) } 
 	}
+	def reply(msg: MatchedMessage, replies: String*) = bot map { quibot =>
+		sayTo(msg.channel, msg.user.nick.nickname, replies:_*)
+	}
 }
