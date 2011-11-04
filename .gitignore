@@ -2,4 +2,4 @@ target/
 project/boot
 appendonly.aof
 *.aof
-quibot.cfg
+*.cfg
