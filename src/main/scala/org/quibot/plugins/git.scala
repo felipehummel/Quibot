@@ -12,6 +12,7 @@ case class GitPlugin(gitRepositoryDir: String) extends QuiBotPlugin with CLIComm
     }, 10000, 300000) // 5 min
     
     respondTo("git +log *(.*)$") { msg =>
+        println("[INFO] 'git log' "+msg) 
         val branch = if (msg.groups.size > 0 && msg.groups(0) != "") msg.groups(0) else "origin/master"
         val (_, content) = exec("git log --oneline -n 5 "+branch)
         say(msg.channel, "[branch "+branch+"]")
@@ -28,17 +29,18 @@ case class GitPlugin(gitRepositoryDir: String) extends QuiBotPlugin with CLIComm
     def truncateCommitMsg(msg: String, limit: Int = 100) = if (msg.length > limit) msg.take(100) + "..."  else msg
 
     def fetchGit = {
-        // val lines = exec("git fetch")
-        val lines = """ap okepokaopka
-        aepokaopkaeok
-        aekoaeopkae
- + b8ef533...4326864 wip-anselmo -> origin/wip-anselmo  (forced update)
-   97a0c882909e..05db5143730bf  wip-lg     -> origin/wip-lg
- * [new branch]      wip-lg-credipre -> origin/wip-lg-credipre
- + 89f2ab1...02875b5 wip-rodrigo_data -> origin/wip-rodrigo_data  (forced update)
- * [new tag]         0.11       -> 0.11
- aeoijeaiojaeoijaejae
- aeiopjeioajaeiojioaejoaeij""" split "\n"
+        val lines = exec("git fetch")._2
+ //        val lines = """ap okepokaopka
+ //        aepokaopkaeok
+ //        aekoaeopkae
+ // + b8ef533...4326864 wip-anselmo -> origin/wip-anselmo  (forced update)
+ //   97a0c882909e..05db5143730bf  wip-lg     -> origin/wip-lg
+ // * [new branch]      wip-lg-credipre -> origin/wip-lg-credipre
+ // + 89f2ab1...02875b5 wip-rodrigo_data -> origin/wip-rodrigo_data  (forced update)
+ // * [new tag]         0.11       -> 0.11
+ // aeoijeaiojaeoijaejae
+ // aeiopjeioajaeiojioaejoaeij""" split "\n"
+        println("[INFO] 'git fetch' response: "+lines)
         val regex = """(([a-z0-9]+)\.\.([a-z0-9]+))? +([^ ]+) +-> ([^ ]+).*$""".r
         var messages = List[String]()
         if (lines.size != 0) {
@@ -63,8 +65,10 @@ case class GitPlugin(gitRepositoryDir: String) extends QuiBotPlugin with CLIComm
                     }
                 }
             }
-            messages ::= "-----------!! Repository updates !!-----------"
-            sayAllChannels(messages:_*)
+            if (messages.size != 0) {
+                messages ::= "-----------!! Repository updates !!-----------"
+                sayAllChannels(messages:_*)
+            }
         }
     }
 }
