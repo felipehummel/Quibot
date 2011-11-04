@@ -46,7 +46,8 @@ case class WallPlugin extends RedisPlugin with MessageRandomizer {
 					say (msg.channel, " ------- THE WALL ("+msg.channel.name+") ------- ")
 					for ( i <- 0 until list.size) {
 						say (msg.channel, (i + 1) + " - " + list(i).getOrElse(""))
-					}					
+					}
+					say (msg.channel, " ------------------------------------------------ ")
 				}
 			}
 			case None => reply(msg, "Nothing on the wall =(")
