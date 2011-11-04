@@ -132,7 +132,7 @@ case class IrcClient(nick:Nick, actor:Actor, host:String, port:Int) extends Acto
    }
    case Quit(reason) => sendMessage("QUIT :" + reason)
    case Join(channel) => sendMessage("JOIN " + channel.name)
-        case Part(channel,reason) => sendMessage("PART " + channel.name + " :" + reason)
+   case Part(channel,reason) => sendMessage("PART " + channel.name + " :" + reason)
    case Say(channel, messages) => {
      val oneMessage = messages.toList map ("PRIVMSG " + channel.name + " :" + _)
      sendMessage(oneMessage)
@@ -150,13 +150,13 @@ case class IrcClient(nick:Nick, actor:Actor, host:String, port:Int) extends Acto
 object IrcClient {
 
   // :betehess!bertails@66.31.43.2 PRIVMSG #spartacusse :salut sparta
-  final val PRIVMSG = """^:(\w+)!(.+?)@([\d\.]+) PRIVMSG ([\w#&]+) :(.*)$""".r
+  final val PRIVMSG = """^:(\w+)!(.+?)@([\d\.]+) PRIVMSG ([\w#&-_]+) :(.*)$""".r
   // :irc.w3.org 353 sparta-test = #spartacusse :sparta-test johann @betehess
-  final val JOINMSG = """^:([^ ]+) 353 ([^ ]+) = ([\w#&]+) :(.*)$""".r
+  final val JOINMSG = """^:([^ ]+) 353 ([^ ]+) = ([\w#&-_]+) :(.*)$""".r
   // :johann!johann@98.239.3.24 INVITE test :#spartacusse
   final val INVITEMSG = """^:(\w+)!(.+?)@([\d\.]+) INVITE ([^ ]+) :(.*)$""".r
   // :test!test@98.239.3.24 PART #spartacusse
-  final val PARTMSG = """^:(\w+)!(.+?)@([\d\.]+) PART ([\w#&]+) :(.*)$""".r
+  final val PARTMSG = """^:(\w+)!(.+?)@([\d\.]+) PART ([\w#&-_]+) :(.*)$""".r
   // :irc.w3.org 001 johann :Welcome to the W3C IRC Network johann
   final val CONNUPMSG = """^:([^ ]+) 001 ([^ ]+) :(.*)$""".r
   // :johann!johann@98.239.3.24 KICK #sico test :va t en
@@ -247,7 +247,7 @@ trait IrcBot extends Actor {
    * redefines exit() to also exit the inner IrcClient
    */
   final override def exit():Nothing = {
-    //ircClient.exit() //TODO: FIND WAY TO STOP THIS SHIT
+    //ircClient.exit() //TODO: FIND WAY TO STOP THIS
     super.exit()
   }
 
