@@ -3,3 +3,4 @@ project/boot
 appendonly.aof
 *.aof
 *.cfg
+nohup.out
