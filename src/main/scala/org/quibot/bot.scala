@@ -70,13 +70,15 @@ case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) ex
 object Bot {
    def main(args: Array[String]): Unit = {
         val properties = new java.util.Properties();
-        properties.load(new java.io.FileInputStream("quibot.cfg"))
+        properties.load(new java.io.FileInputStream(args(0)))
         val nick = properties.getProperty("nick")
         val ircServer = properties.getProperty("ircServer")
         val port = properties.getProperty("port").toInt
         val channels = properties.getProperty("channels") split "," map ( Channel(_) )
         val bot = new QuiBot(nick, ircServer, port, channels :_*) 
-        bot use (GitPlugin(properties.getProperty("gitRepositoryDir")), SwearingPlugin() )
+        bot use ( GitPlugin(properties.getProperty("gitRepositoryDir")),
+                  SwearingPlugin(),
+                  BasicPlugin() )
         bot.start
 
         println("Starting Bot!")
