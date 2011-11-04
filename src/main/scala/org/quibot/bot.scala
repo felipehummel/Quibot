@@ -26,7 +26,7 @@ case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) ex
     val commands = new collection.mutable.ArrayBuffer[Command]
 
     def removeNickFromMessage(msg: Message, nick: Nick) = {
-        msg.copy( message = msg.message.substring(nick.nickname.length+1).trim )
+        msg.copy( message = msg.message.trim.substring(nick.nickname.length+1).trim )
     }
 
     def reactOnIrcMessage(ircMessage:IrcMessage) =
@@ -36,7 +36,7 @@ case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) ex
                println("Joined channel " + channel + "; participants are: " + (participants mkString " "))   
             }
             case m @ Message(channel, user, message) => {
-                 if (message startsWith nick.nickname) {
+                 if (message.trim startsWith nick.nickname) {
                     commands filter ( _ matchesMsg message ) foreach { _ execute(removeNickFromMessage(m, nick)) }
                 }
              }
@@ -72,12 +72,15 @@ object Bot {
         val ircServer = properties.getProperty("ircServer")
         val port = properties.getProperty("port").toInt
         val channels = properties.getProperty("channels") split "," map ( c => Channel(c.trim) )
-        val bot = new QuiBot(nick, ircServer, port, channels :_*) 
+        val bot = new QuiBot(nick, ircServer, port, channels :_*)
         bot use ( GitPlugin(properties.getProperty("gitRepositoryDir")),
                   SwearingPlugin(),
                   BasicPlugin() )
         bot.start
-
         println("Starting Bot!")
+
+        System.out.println("----- Interactive QuiBot -----\n!Enter a line of text to talk to channel: "+channels(0));
+        Iterator.continually(Console.readLine).takeWhile(_ != "").foreach(line => bot say (channels(0), line))
+
    }
 }
