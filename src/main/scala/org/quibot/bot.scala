@@ -22,7 +22,6 @@ case class MatchedMessage(msg: Message, regex: Regex) {
 }
 
 case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) extends IrcBot {
-
     joinedChannels foreach { channel => this ! Join(channel) }
     val commands = new collection.mutable.ArrayBuffer[Command]
 
@@ -34,9 +33,7 @@ case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) ex
         ircMessage match {
             case d @ Disconnected()                     => exit()
             case p @ Participant(channel, participants) => {
-                if (joinedChannels contains channel) {
-                   println("Joined channel " + channel + "; participants are: " + (participants mkString " "))   
-                }
+               println("Joined channel " + channel + "; participants are: " + (participants mkString " "))   
             }
             case m @ Message(channel, user, message) => {
                  if (message startsWith nick.nickname) {
@@ -74,7 +71,7 @@ object Bot {
         val nick = properties.getProperty("nick")
         val ircServer = properties.getProperty("ircServer")
         val port = properties.getProperty("port").toInt
-        val channels = properties.getProperty("channels") split "," map ( Channel(_) )
+        val channels = properties.getProperty("channels") split "," map ( c => Channel(c.trim) )
         val bot = new QuiBot(nick, ircServer, port, channels :_*) 
         bot use ( GitPlugin(properties.getProperty("gitRepositoryDir")),
                   SwearingPlugin(),
