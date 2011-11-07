@@ -76,6 +76,7 @@ object Bot {
         bot use ( GitPlugin(properties.getProperty("gitRepositoryDir")),
                   SwearingPlugin(),
                   WallPlugin(),
+                  ReviewPlugin(),
                   BasicPlugin() )
         bot.start
         println("Starting Bot!")
