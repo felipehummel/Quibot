@@ -2,6 +2,7 @@ package org.quibot
 
 import java.io.File
 import java.io.{BufferedReader, PrintWriter, InputStreamReader, OutputStreamWriter}
+import scalaj.http.Http
 
 trait CLICommands {
     var currDir : Option[File] = None
@@ -32,4 +33,9 @@ trait CLICommands {
 trait MessageRandomizer {
     val rand = new scala.util.Random
     def randomize(msgs: IndexedSeq[String]) = msgs((rand.nextFloat * msgs.size).toInt)
+}
+
+
+trait HttpHelper {
+    def http(url: String) = Http(url)
 }
