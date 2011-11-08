@@ -53,7 +53,8 @@ case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) ex
         this ! Say(channel, msgs toList)
     }
     def sayTo(channel: Channel, userNick: String, msgs: String*) {
-        this ! Say(channel, msgs map ( msg => userNick + ": " + msg ) toList)
+        say(channel, msgs map ( msg => userNick + ": " + msg ):_*)
+        // this ! Say(channel, msgs map ( msg => userNick + ": " + msg ) toList)
     }
 
     def use (plugins: QuiBotPlugin*) {
@@ -64,15 +65,39 @@ case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) ex
     }
 }
 
+class MockQuiBot(testFile: String, nick:Nick, host:String, port:Int, joinedChannels: Channel*) 
+                extends QuiBot(nick, host, port, joinedChannels:_*) {
+
+    override def start = {
+        startActor()
+        val fakeUser = User(Nick("fakeNick"), Name("fakeUser"), Host("fakeHost"))
+        io.Source.fromFile(testFile).getLines.foreach(line => this ! Message(joinedChannels(0), fakeUser, line))
+        this
+    }
+
+    override def reactOnIrcMessage(ircMessage:IrcMessage) = ircMessage match {
+        case m @ Message(channel, user, message) => commands filter ( _ matchesMsg message ) foreach { _ execute(m) }
+        case _ => {}
+    }
+
+    override def say(channel: Channel, msgs: String*) {
+        msgs foreach ( msg => println("bot: "+msg) )
+    }
+}
+
 object Bot {
    def main(args: Array[String]): Unit = {
         val properties = new java.util.Properties();
         properties.load(new java.io.FileInputStream(args(0)))
         val nick = properties.getProperty("nick")
         val ircServer = properties.getProperty("ircServer")
-        val port = properties.getProperty("port").toInt
+        val port = properties.getProperty("port").trim.toInt
         val channels = properties.getProperty("channels") split "," map ( c => Channel(c.trim) )
-        val bot = new QuiBot(nick, ircServer, port, channels :_*)
+        val testing = properties.getProperty("testing").trim.toBoolean
+        val bot: QuiBot = if (testing)
+                            new MockQuiBot("test.data", nick, ircServer, port, channels:_*)
+                         else
+                            new QuiBot(nick, ircServer, port, channels :_*)
         bot use ( GitPlugin(properties.getProperty("gitRepositoryDir")),
                   SwearingPlugin(),
                   WallPlugin(),
@@ -83,6 +108,5 @@ object Bot {
 
         System.out.println("----- Interactive QuiBot -----\n!Enter a line of text to talk to channel: "+channels(0));
         Iterator.continually(Console.readLine).takeWhile(_ != "").foreach(line => bot say (channels(0), line))
-
    }
 }
