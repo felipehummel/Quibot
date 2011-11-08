@@ -7,7 +7,7 @@ import java.util.concurrent.{Executors, Callable}
 import scala.actors._
 import scala.actors.Actor._
 
-//All this file is heavily copied from https://bitbucket.org/rpelisse/ircboot/overview
+//All code in this file is heavily based on https://bitbucket.org/rpelisse/ircboot/overview with minor tweaks
 
 case class RawMessage(message:String)
 
@@ -238,8 +238,12 @@ trait IrcBot extends Actor {
   /**
    * redefines start() to also start the inner IrcClient
    */
-  final override def start():Actor = {
+  override def start():Actor = {
     ircClient.start()
+    startActor()
+  }
+
+  def startActor():Actor = {
     super.start()
   }
 
