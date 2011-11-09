@@ -32,7 +32,7 @@ trait CLICommands {
 
 trait MessageRandomizer {
     val rand = new scala.util.Random
-    def randomize(msgs: IndexedSeq[String]) = msgs((rand.nextFloat * msgs.size).toInt)
+    def randomize[T](msgs: IndexedSeq[T]) : T = msgs((rand.nextFloat * msgs.size).toInt)
 }
 
 
