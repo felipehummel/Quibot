@@ -3,7 +3,7 @@ package org.quibot.plugins
 import org.quibot._
 import org.spartacusse.ircbot.{User, Message, Channel}
 
-case class ReviewPlugin extends QuiBotPlugin with  RedisPlugin {
+case class ReviewPlugin extends QuiBotPlugin with RedisPlugin {
 	respondTo("reviews? +show +([^ ]+) *$") { msg =>
 		if (msg.groups.size > 0 && msg.groups(0) != "") {
 			val branch = msg.groups(0)
