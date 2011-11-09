@@ -102,6 +102,7 @@ object Bot {
                   SwearingPlugin(),
                   WallPlugin(),
                   ReviewPlugin(),
+                  RandomVideoPlugin(),
                   BasicPlugin() )
         bot.start
         println("Starting Bot!")
