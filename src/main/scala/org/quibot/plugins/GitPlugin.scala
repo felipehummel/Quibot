@@ -9,7 +9,7 @@ case class GitPlugin(gitRepositoryDir: String) extends QuiBotPlugin with CLIComm
     val timer = new java.util.Timer()
     timer schedule ( new java.util.TimerTask {
         override def run() = fetchGit
-    }, 60000, 300000) // 5 min
+    }, 60000, 150000) // 5 min
     
     respondTo("git +log *(.*)$") { msg =>
         println("[INFO] 'git log' "+msg) 
