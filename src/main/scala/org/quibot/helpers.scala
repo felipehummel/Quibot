@@ -30,11 +30,11 @@ trait CLICommands {
     }
 }
 
-trait MessageRandomizer {
+trait Randomizer {
     val rand = new scala.util.Random
+    def randomIterator[T](msgs: IndexedSeq[T]) : Iterator[T] = Iterator.continually ( randomize(msgs) )
     def randomize[T](msgs: IndexedSeq[T]) : T = msgs((rand.nextFloat * msgs.size).toInt)
 }
-
 
 trait HttpHelper {
     def http(url: String) = Http(url)
