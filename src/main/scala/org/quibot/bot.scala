@@ -54,7 +54,6 @@ case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) ex
     }
     def sayTo(channel: Channel, userNick: String, msgs: String*) {
         say(channel, msgs map ( msg => userNick + ": " + msg ):_*)
-        // this ! Say(channel, msgs map ( msg => userNick + ": " + msg ) toList)
     }
 
     def use (plugins: QuiBotPlugin*) {
@@ -87,13 +86,14 @@ class MockQuiBot(testFile: String, nick:Nick, host:String, port:Int, joinedChann
 
 object Bot {
    def main(args: Array[String]): Unit = {
+    try {
         val properties = new java.util.Properties();
         properties.load(new java.io.FileInputStream(args(0)))
         val nick = properties.getProperty("nick")
         val ircServer = properties.getProperty("ircServer")
         val port = properties.getProperty("port").trim.toInt
         val channels = properties.getProperty("channels") split "," map ( c => Channel(c.trim) )
-        val testing = properties.getProperty("testing").trim.toBoolean
+        val testing = args.length > 1 && args(1) == "--testing"
         val bot: QuiBot = if (testing)
                             new MockQuiBot("test.data", nick, ircServer, port, channels:_*)
                          else
@@ -102,12 +102,15 @@ object Bot {
                   SwearingPlugin(),
                   WallPlugin(),
                   ReviewPlugin(),
-                  RandomVideoPlugin(),
+                  VideoPlugin(),
                   BasicPlugin() )
         bot.start
         println("Starting Bot!")
 
         System.out.println("----- Interactive QuiBot -----\n!Enter a line of text to talk to channel: "+channels(0));
         Iterator.continually(Console.readLine).takeWhile(_ != "").foreach(line => bot say (channels(0), line))
+     } catch {
+       case e: Exception => e.printStackTrace
+     }
    }
 }
