@@ -37,7 +37,8 @@ case class QuiBot(nick:Nick, host:String, port:Int, joinedChannels: Channel*) ex
             }
             case m @ Message(channel, user, message) => {
                  if (message.trim startsWith nick.nickname) {
-                    commands filter ( _ matchesMsg message ) foreach { _ execute(removeNickFromMessage(m, nick)) }
+                    val msg = removeNickFromMessage(m, nick)
+                    commands filter ( _ matchesMsg msg.message ) foreach { _ execute(msg) }
                 }
              }
             case i @ Invitation(sender, nick, channel)    => ()
@@ -72,11 +73,6 @@ class MockQuiBot(testFile: String, nick:Nick, host:String, port:Int, joinedChann
         val fakeUser = User(Nick("fakeNick"), Name("fakeUser"), Host("fakeHost"))
         io.Source.fromFile(testFile).getLines.foreach(line => this ! Message(joinedChannels(0), fakeUser, line))
         this
-    }
-
-    override def reactOnIrcMessage(ircMessage:IrcMessage) = ircMessage match {
-        case m @ Message(channel, user, message) => commands filter ( _ matchesMsg message ) foreach { _ execute(m) }
-        case _ => {}
     }
 
     override def say(channel: Channel, msgs: String*) {

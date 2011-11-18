@@ -7,7 +7,7 @@ import scala.xml._
 
 case class VideoPlugin extends QuiBotPlugin with HttpHelper with Randomizer {
 	val orderBy = randomIterator( Array("relevance", "published", "viewCount", "rating") )
-	respondTo("random +video +(.+)$") { msg =>
+	respondTo("^ *random +video +(.+)$") { msg =>
 		val q = msg.groups(0)
 		println("[INFO] random video | query: "+q)
 		val result = http("http://gdata.youtube.com/feeds/api/videos")
@@ -24,7 +24,7 @@ case class VideoPlugin extends QuiBotPlugin with HttpHelper with Randomizer {
 		say(msg.channel, title+" => "+href.replace("&feature=youtube_gdata", ""))
 	}
 
-	respondTo("video +(.+)$") { msg =>
+	respondTo("^ *video +(.+)$") { msg =>
 		val q = msg.groups(0)
 		println("[INFO] video | query: "+q)
 		val result = http("http://gdata.youtube.com/feeds/api/videos")
