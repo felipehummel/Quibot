@@ -3,14 +3,14 @@ package org.quibot.plugins
 import org.quibot._
 
 trait QuiBotPlugin {
-	val commands = new collection.mutable.ArrayBuffer[Command]
+	val commands = new collection.mutable.ArrayBuffer[MessageHandler]
 	private var bot: Option[QuiBot] = None //injected later
 	
 	def setBot(bot: QuiBot)	= this.bot = Some(bot)
 
 	def respondTo(regexStr: String)(f: MatchedMessage => Unit) {
         val regex = ("(?i)"+regexStr).r //adding case insensitive
-        commands += Command(regex)(f)  
+        commands += MessageHandler(regex)(f)
     }
 
     def say(channel: Channel, msgs: List[String]) : Unit = say(channel, msgs:_*)

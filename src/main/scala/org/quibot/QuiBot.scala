@@ -8,7 +8,7 @@ import org.quibot.plugins._
 import scala.actors._
 import scala.actors.Actor._
 
-case class Command(val regex: Regex)(command: MatchedMessage => Unit) {
+case class MessageHandler(val regex: Regex)(command: MatchedMessage => Unit) {
     def matchesMsg(msg: String) = !regex.findAllIn(msg).isEmpty
     def execute(msg: Message) = command(MatchedMessage(msg,regex))
 }
@@ -67,7 +67,7 @@ case class User(nick:Nick, name:Name, host:Host) {
 abstract class QuiBot(val nick: Nick, val joinedChannels: Channel*) 
   extends Actor {
   joinedChannels foreach { channel => this ! Join(channel) }
-  val commands = new collection.mutable.ArrayBuffer[Command]
+  val commands = new collection.mutable.ArrayBuffer[MessageHandler]
 
   def use (plugins: QuiBotPlugin*) {
       for( plugin <- plugins) {
