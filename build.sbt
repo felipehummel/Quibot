@@ -12,3 +12,6 @@ resolvers += "Twitter Repository" at "http://maven.twttr.com"
 
 resolvers += "Scala-Tools Nexus Repository for Releases" at "http://nexus.scala-tools.org/content/repositories/releases"
 
+scalacOptions += "-deprecation"
+
+scalacOptions += "-unchecked"
