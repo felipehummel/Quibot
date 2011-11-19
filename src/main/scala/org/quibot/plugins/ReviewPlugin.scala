@@ -1,7 +1,6 @@
 package org.quibot.plugins
 
 import org.quibot._
-import org.spartacusse.ircbot.{User, Message, Channel}
 
 case class ReviewPlugin extends QuiBotPlugin with RedisPlugin {
 	respondTo("reviews? +show +([^ ]+) *$") { msg =>

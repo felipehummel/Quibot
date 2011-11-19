@@ -6,10 +6,10 @@ import java.util.concurrent.{Executors, Callable}
 
 import scala.actors._
 import scala.actors.Actor._
+import org.quibot.Channel
+import org.quibot._
 
 //All code in this file is heavily based on https://bitbucket.org/rpelisse/ircboot/overview with minor tweaks
-
-case class RawMessage(message:String)
 
 /**
  * this class reads lines from in and generates RawMessage for the actor
@@ -163,75 +163,22 @@ object IrcClient {
   final val KICKMSG = """^:(\w+)!(.+?)@([\d\.]+) KICK ([^ ]+) ([^ ]+) :(.*)$""".r
 }
 
-/** value objects */
-
-case class Channel(name:String) {
-  override def toString = name.toString
-}
-object Channel {
-  implicit def channelFromString(channelName:String):Channel = Channel(channelName)
-}
-
-case class Nick(nickname:String) {
-  override def toString = nickname.toString
-}
-object Nick {
-  implicit def nickFromString(nickname:String):Nick = Nick(nickname)
-}
-case class Name(name:String)
-case class Host(hostname:String)
-case class User(nick:Nick, name:Name, host:Host) {
-  override def toString = "["+nick.nickname+"|"+name.name+"|"+host.hostname+"]"
-}
-
-sealed abstract class IrcCommand
-case class Quit(reason:String)                   extends IrcCommand
-case class Join(channel:Channel)                 extends IrcCommand
-case class Say(channel:Channel, messages:List[String]) extends IrcCommand
-case class Invite(nick:Nick, channel:Channel)    extends IrcCommand
-case class Part(channel:Channel, reason:String)  extends IrcCommand
-case class Kick(nick:Nick, channel:Channel, reason:String) extends IrcCommand
-object Say {
-  def apply(channel:Channel, messages:String*):Say = Say(channel, messages.toList)
-}
-
-sealed abstract class IrcMessage
-case class Message(channel:Channel, user:User, message:String)   extends IrcMessage
-case class Disconnected()                                        extends IrcMessage
-case class Participant(channel:Channel, participants:List[Nick]) extends IrcMessage
-case class Invitation(sender:User, nick:Nick, channel:Channel)   extends IrcMessage
-case class PartMsg(user:User, channel:Channel, reason:String)     extends IrcMessage
-case class ConnUpMsg(host:String, nick:Nick, message:String)       extends IrcMessage
-case class KickMsg(user:User, channel:Channel, nick:Nick, reason:String) extends IrcMessage
-
 /**
  * IrcBot implements a skeleton for an IRC bot
  * a real bot must extends this class
  * this is an Actor where act() is already defined
  * and reacts on IrcMessages regarding reactOnIrcMessage()
  */
-trait IrcBot extends Actor {
+class IrcQuiBot(host: String, port: Int, nick: Nick, joinedChannels: Channel*) 
+  extends QuiBot(nick, joinedChannels:_*) {
 
-  val nick:Nick
-  val host:String
-  val port:Int
+  val ircClient = IrcClient(nick, this.asInstanceOf[Actor], host, port)
 
-  val ircClient = IrcClient(nick, this, host, port)
-
-  /**
-   * reacts on an IrcMessage
-   * this is the most important part for a bot
-   */
-  def reactOnIrcMessage(m:IrcMessage):Unit
-  
-  /**
-   * TODO
-   */
-  final def act() =
+  final override def act() =
     loop {
       react {
-         case m:IrcMessage => reactOnIrcMessage(m)
-         case m:IrcCommand => ircClient forward m
+         case m:ChatMessage => reactOnIrcMessage(m)
+         case m:ChatCommand => ircClient forward m
       }
     }
 
@@ -254,23 +201,5 @@ trait IrcBot extends Actor {
     //ircClient.exit() //TODO: FIND WAY TO STOP THIS
     super.exit()
   }
-
-}
-
-import scala.concurrent.MailBox
-
-/**
- * http://programming-scala.labs.oreilly.com/ch04.html#para_the_observableclicks_trait_e
- */
-trait LogBot extends IrcBot {
-
-  val syncBox = new MailBox()
-
-  abstract override def reactOnIrcMessage(ircMessage:IrcMessage) = {
-    syncBox send ircMessage
-    super.reactOnIrcMessage(ircMessage)
-  }
-
-  def waitOn(f:PartialFunction[AnyRef, Unit]):Unit = syncBox.receive(f)
 
 }

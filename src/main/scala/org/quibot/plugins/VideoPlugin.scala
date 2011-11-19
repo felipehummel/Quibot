@@ -1,7 +1,6 @@
 package org.quibot.plugins
 
 import org.quibot._
-import org.spartacusse.ircbot.{User, Message, Channel}
 import scalaj.http.HttpOptions
 import scala.xml._
 

@@ -1,7 +1,6 @@
 package org.quibot.plugins
 
 import org.quibot._
-import org.spartacusse.ircbot.{User, Message, Channel}
 
 case class WallPlugin extends QuiBotPlugin with RedisPlugin with Randomizer {
 	private val clearMessages = randomIterator ( Array("Everything is clean!", "All white and clear now", "What the hell you just did!?!!? What if someone didn't read one of the messages!?! :D", "I'm not cleaning that up! ... ... ... ... ... ... Ok, just did.", "Clear yourself! Nevermind, I'll do it!", "Look at this filthy floor. I'm on it.") )

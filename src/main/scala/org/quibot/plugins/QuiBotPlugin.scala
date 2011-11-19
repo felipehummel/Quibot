@@ -1,7 +1,6 @@
 package org.quibot.plugins
 
 import org.quibot._
-import org.spartacusse.ircbot._
 
 trait QuiBotPlugin {
 	val commands = new collection.mutable.ArrayBuffer[Command]
