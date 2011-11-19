@@ -2,7 +2,7 @@ package org.quibot.plugins
 
 import org.quibot._
 
-case class SwearingPlugin extends QuiBotPlugin with Randomizer {
+case class SwearingPlugin() extends QuiBotPlugin with Randomizer {
     val swearingMessages = randomIterator( Array("manere seu linguajar robin, você ainda é um menino!", "teu cu","vai se fuderem", "VOCES NAUM MERECEM FALAR COM MEU BEBE", "seu madeerfãquer! seila como escreve", "pega essa porra desse arquivo e enfia no cu",
         "vou zerar tua conta seu fdp", "Seu saldo é de R$ 37,23 ... ... ... ... POBRE!", "pega na minha e balança", "vai tomar bem no meio da berada do seu cu", "I like turtles", "vou comer o robin hoje", "vou comer a tia do batimaaaa", "teu cu é meu", "e a mãe vai bem?") )
 

@@ -2,7 +2,7 @@ package org.quibot.plugins
 
 import org.quibot._
 
-case class ReviewPlugin extends QuiBotPlugin with RedisPlugin {
+case class ReviewPlugin() extends QuiBotPlugin with RedisPlugin {
 	respondTo("reviews? +show +([^ ]+) *$") { msg =>
 		if (msg.groups.size > 0 && msg.groups(0) != "") {
 			val branch = msg.groups(0)
@@ -10,8 +10,8 @@ case class ReviewPlugin extends QuiBotPlugin with RedisPlugin {
 				if (isFinished(branch)) 
 					say(msg.channel, "According to "+reviewer(branch)+", branch: "+branch+ " is already good to go to master =)")
 				branchComments(msg, branch) match {
-					case Nil => reply(msg, "No comments yet for branch ["+branch+"] | "+branchObs(branch))
-					case Some(l:List[String]) => {
+					case None => reply(msg, "No comments yet for branch ["+branch+"] | "+branchObs(branch))
+					case Some(l) => {
 						say(msg.channel, "Branch ["+branch+"] | "+branchObs(branch))
 						say(msg.channel, "    Comments:")
 						l.foreach( comment => say(msg.channel, "    - " + comment) )
@@ -110,9 +110,9 @@ case class ReviewPlugin extends QuiBotPlugin with RedisPlugin {
 	}
 	def okBranch(branch: String, reviewer: String) = redis.set(branchOkKey(branch), reviewer)
 
-	def branchComments(msg: MatchedMessage, branch: String) = {
+	def branchComments(msg: MatchedMessage, branch: String): Option[List[String]] = {
 		redis.llen(branchCommentsKey(branch)) match {
-			case None | Some(0) => Nil
+			case None | Some(0) => None
 			case Some(n) => redis.lrange(branchCommentsKey(branch), 0, n) map ( _ flatten )
 		}
 	}

@@ -4,7 +4,7 @@ import org.quibot._
 import scalaj.http.HttpOptions
 import scala.xml._
 
-case class VideoPlugin extends QuiBotPlugin with HttpHelper with Randomizer {
+case class VideoPlugin() extends QuiBotPlugin with HttpHelper with Randomizer {
 	val orderBy = randomIterator( Array("relevance", "published", "viewCount", "rating") )
 	respondTo("^ *random +video +(.+)$") { msg =>
 		val q = msg.groups(0)
@@ -18,8 +18,8 @@ case class VideoPlugin extends QuiBotPlugin with HttpHelper with Randomizer {
 						.asXml
 		val entries = result \ "entry" toArray
 		val chosenEntry = randomize(entries)
-		val title = (chosenEntry \ "title").first.text
-		val href = (((chosenEntry \ "link").first) \ "@href").text
+		val title = (chosenEntry \ "title").head.text
+		val href = (((chosenEntry \ "link").head) \ "@href").text
 		say(msg.channel, title+" => "+href.replace("&feature=youtube_gdata", ""))
 	}
 
@@ -35,8 +35,8 @@ case class VideoPlugin extends QuiBotPlugin with HttpHelper with Randomizer {
 						.asXml
 		val entries = result \ "entry"
 		entries foreach { entry =>
-			val title = (entry \ "title").first.text
-			val href = (((entry \ "link").first) \ "@href").text
+			val title = (entry \ "title").head.text
+			val href = (((entry \ "link").head) \ "@href").text
 			say(msg.channel, title+" => "+href.replace("&feature=youtube_gdata", ""))
 		}
 	}
